@@ -1,13 +1,5 @@
 <resources>
-    <string name="app_name">lab04</string>
-    <string name="type">Type Here</string>
-    <string name="urgent">Urgent</string>
-    <string name="add">ADD</string>
-    <string name="alertTitle">Do you want to delete this?</string>
-    <string name="alertMessage">The selected row is: </string>
-    <string name="alertPositiveButton">Yes</string>
-    <string name="alertNegativeButton">No</string>
-
+    <string name="app_name">lab06</string>
 
 
 

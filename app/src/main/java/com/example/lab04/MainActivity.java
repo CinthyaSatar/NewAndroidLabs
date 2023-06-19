@@ -1,110 +1,124 @@
 package com.example.lab04;
 
-import android.content.Context;
-import android.graphics.Color;
-import android.os.Bundle;
-import android.text.Layout;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.Switch;
-import android.widget.TextView;
-
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.w3c.dom.Text;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
-    MyListAdapter myAdapter;
-    private ArrayList<myObj> elements = new ArrayList<>();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        EditText input = findViewById(R.id.type);
-        Switch isUrgent = findViewById(R.id.urgent);
-        ListView myList = findViewById(R.id.toDo);
-        String alertTitle = getResources().getString(R.string.alertTitle);
-        String alertMessage = getResources().getString(R.string.alertMessage);
-        String alertYes = getResources().getString(R.string.alertPositiveButton);
-        String alertNo = getResources().getString(R.string.alertNegativeButton);
+        Log.i("Url is happening", "test");
+        CatImages catImg = new CatImages();
+        catImg.execute("https://cataas.com/cat?json=true");
 
 
-
-
-        Button add = findViewById(R.id.add);
-        add.setOnClickListener(click -> {
-            elements.add(new myObj(input.getText().toString(), isUrgent.isChecked()));
-            myAdapter.notifyDataSetChanged();
-            input.setText("");
-
-        });
-
-        myList.setAdapter( myAdapter = new MyListAdapter() );
-        myList.setOnItemLongClickListener((parent, view, pos, id) ->{
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-            alertDialogBuilder.setTitle(alertTitle)
-                    .setMessage(alertMessage + pos)
-                    .setPositiveButton(alertYes, (click, arg) -> {
-                        elements.remove(pos);
-                        myAdapter.notifyDataSetChanged();
-                    })
-                    .setNegativeButton(alertNo, (click, arg) -> {})
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
-
-            myAdapter.notifyDataSetChanged();
-            return false;
-        });
 
     }
-    private class MyListAdapter extends BaseAdapter {
+        private class CatImages extends AsyncTask< String, Integer, String > {
+            Bitmap catImage;
+            ProgressBar bar;
 
-        public int getCount() {
-            return elements.size();
-        }
-        public String getItem(int position) {
-            return elements.get(position).text;
-        }
-        public Boolean isUrgent(int position) {
-            return elements.get(position).urgency;
-        }
-        public long getItemId(int position) {
-            return (long) position;
-        }
-        public View getView(int position, View old, ViewGroup parent) {
-            View newView = old;
-            LayoutInflater inflater = getLayoutInflater();
-            if (newView == null) {
-                newView = inflater.inflate(R.layout.todo, parent, false);
+            @Override
+            protected String doInBackground(String... args) {
+                ImageView image = (ImageView) findViewById(R.id.CatImage);
+
+                while(true){
+                    try {
+
+                        URL url = new URL (args[0]);
+                        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+                        InputStream response = urlConnection.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(response, "UTF-8"), 8);
+                        StringBuilder sb =new StringBuilder();
+
+                        String line = null;
+                        while ((line=reader.readLine())!=null){
+                            sb.append(line + "\n");
+                        }
+                        String result = sb.toString();
+                        JSONObject imgData = new JSONObject(result);
+                        String imgId= imgData.getString("_id");
+                        File imgFile = new File(imgId);
+                        Log.i("Does the file exist?", String.valueOf(imgFile.exists()));
+                        if (!imgFile.exists()){
+                            String imgUrl = "https://cataas.com"+imgData.getString("url");
+                            Log.i("Does the imgUrl exist?", imgUrl);
+
+                            URL imgurl = new URL (imgUrl);
+                            HttpsURLConnection imgurlConnection = (HttpsURLConnection) imgurl.openConnection();
+                            int responseCode = -1;
+                            imgurlConnection.connect();
+                            responseCode = imgurlConnection.getResponseCode();
+                            if(responseCode == HttpURLConnection.HTTP_OK)
+                            {
+                                //download
+                                response = imgurlConnection.getInputStream();
+                                catImage = BitmapFactory.decodeStream(response);
+                                response.close();
+                            }
+                        }
+                        if (!imgFile.exists()){
+                            Log.i("Does the file exist now?", String.valueOf(imgFile.exists()));
+
+                        }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                image.setImageBitmap(catImage);
+                            }
+                        });
+
+                        for (int i = 0; i<100; i++){
+                            try{
+                                publishProgress(i);
+                                Thread.sleep(30);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (MalformedURLException e) {
+                        throw new RuntimeException(e);
+                    }
+                    catch (IOException e) {
+                        // this is an error when openConnection fails
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
-            TextView tView = newView.findViewById(R.id.insertText);
-            tView.setText(getItem(position));
-            Color mColor = new Color();
-            if(isUrgent(position))
-                newView.setBackgroundColor(Color.parseColor("#ff0000"));
-            return newView;
-        }
-    }
-    private class myObj {
-        String text;
-        boolean urgency;
+            protected void onProgressUpdate(Integer ... args){
+                ProgressBar progressBar = (ProgressBar) findViewById(R.id.Progressbar);
+                progressBar.setProgress(args[0]);
 
-        public myObj(String text,boolean urgency ){
-            this.text=text;
-            this.urgency=urgency;
+            }
         }
-    }
+
 }

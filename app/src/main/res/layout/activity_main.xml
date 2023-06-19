@@ -5,38 +5,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
+    android:background="@color/black"
+
     >
 
-
-    <ListView
-        android:id="@+id/toDo"
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:id="@+id/CatImage"
+        />
 
-    <EditText
-        android:id="@+id/type"
-        android:layout_width="220dp"
-        android:layout_height="wrap_content"
-        android:hint="@string/type"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
-
-    <Switch
-        android:id="@+id/urgent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/urgent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/type"
-        android:height="32dp"/>
-
-    <Button
-        android:id="@+id/add"
-        android:layout_width="wrap_content"
+    <ProgressBar
+        android:id="@+id/Progressbar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/urgent"
-        android:text="@string/add"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

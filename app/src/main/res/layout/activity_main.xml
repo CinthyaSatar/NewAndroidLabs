@@ -8,20 +8,11 @@
     android:background="@color/black"
 
     >
-
-    <ImageView
+    <ListView
+        android:id="@+id/listView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/CatImage"
-        />
+        android:layout_height="match_parent"/>
 
-    <ProgressBar
-        android:id="@+id/Progressbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        style="@android:style/Widget.ProgressBar.Horizontal"
 
-        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

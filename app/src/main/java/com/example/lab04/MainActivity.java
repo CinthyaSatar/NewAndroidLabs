@@ -1,17 +1,27 @@
 package com.example.lab04;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,32 +34,31 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
+    MyListAdapter myAdapter;
+    private Bundle elements = new Bundle();
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Log.i("Url is happening", "test");
-        CatImages catImg = new CatImages();
-        catImg.execute("https://cataas.com/cat?json=true");
-
+        StarWars starWars = new StarWars();
+        starWars.execute("https://swapi.dev/api/people/?format=json");
 
 
     }
-        private class CatImages extends AsyncTask< String, Integer, String > {
-            Bitmap catImage;
-            ProgressBar bar;
+        private class StarWars extends AsyncTask< String, Integer, String > {
+
+            ListView myList = (ListView) findViewById(R.id.listView);
 
             @Override
             protected String doInBackground(String... args) {
-                ImageView image = (ImageView) findViewById(R.id.CatImage);
-
-                while(true){
                     try {
 
                         URL url = new URL (args[0]);
@@ -61,48 +70,24 @@ public class MainActivity extends AppCompatActivity {
                         String line = null;
                         while ((line=reader.readLine())!=null){
                             sb.append(line + "\n");
+
                         }
                         String result = sb.toString();
-                        JSONObject imgData = new JSONObject(result);
-                        String imgId= imgData.getString("_id");
-                        File imgFile = new File(imgId);
-                        Log.i("Does the file exist?", String.valueOf(imgFile.exists()));
-                        if (!imgFile.exists()){
-                            String imgUrl = "https://cataas.com"+imgData.getString("url");
-                            Log.i("Does the imgUrl exist?", imgUrl);
+                        JSONObject starWarsList = new JSONObject(result);
+                        JSONArray characters = starWarsList.getJSONArray("results");
 
-                            URL imgurl = new URL (imgUrl);
-                            HttpsURLConnection imgurlConnection = (HttpsURLConnection) imgurl.openConnection();
-                            int responseCode = -1;
-                            imgurlConnection.connect();
-                            responseCode = imgurlConnection.getResponseCode();
-                            if(responseCode == HttpURLConnection.HTTP_OK)
-                            {
-                                //download
-                                response = imgurlConnection.getInputStream();
-                                catImage = BitmapFactory.decodeStream(response);
-                                response.close();
-                            }
+                        for (int i=0 ; i < characters.length(); i++){
+                            JSONObject obj = characters.getJSONObject(i);
+                            String name = obj.getString("name");
+                            elements.putString("Name", name);
                         }
-                        if (!imgFile.exists()){
-                            Log.i("Does the file exist now?", String.valueOf(imgFile.exists()));
+                        myList.setAdapter( myAdapter = new MyListAdapter() );
+                        myList.setOnItemLongClickListener((parent, view, pos, id) ->{
 
-                        }
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                image.setImageBitmap(catImage);
-                            }
+                            myAdapter.notifyDataSetChanged();
+                            return false;
                         });
 
-                        for (int i = 0; i<100; i++){
-                            try{
-                                publishProgress(i);
-                                Thread.sleep(30);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
                     } catch (MalformedURLException e) {
                         throw new RuntimeException(e);
                     }
@@ -112,13 +97,31 @@ public class MainActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
-                }
-            }
-            protected void onProgressUpdate(Integer ... args){
-                ProgressBar progressBar = (ProgressBar) findViewById(R.id.Progressbar);
-                progressBar.setProgress(args[0]);
 
+            return "";
             }
         }
+    private class MyListAdapter extends BaseAdapter {
 
+        public int getCount() {
+            return elements.size();
+        }
+        public String getItem(int position) {
+            return elements.get(position+ "").toString();
+        }
+        public long getItemId(int position) {
+            return (long) position;
+        }
+        public View getView(int position, View old, ViewGroup parent) {
+            View newView = old;
+            LayoutInflater inflater = getLayoutInflater();
+            if (newView == null) {
+                newView = inflater.inflate(R.layout.activity_main, parent, false);
+            }
+            TextView lView = newView.findViewById(R.id.listView);
+            lView.setText(getItem(position));
+
+            return newView;
+        }
+    }
 }

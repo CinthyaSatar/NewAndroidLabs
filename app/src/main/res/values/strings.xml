@@ -1,9 +1,11 @@
 <resources>
-    <string name="app_name">lab04</string>
-    <string name="name">"Name: "</string>
-    <string name="height">"Height: "</string>
-    <string name="mass">"Mass: "</string>
-    <string name="fillme">fill_me</string>
+    <string name="app_name">lab07</string>
+    <string name="dadJoke">Singing in the shower is fun until you get soap in your mouth. Then it\'s a soap opera.</string>
+    <string name="open">Open</string>
+    <string name="close">Close</string>
+    <string name="home">Home</string>
+    <string name="dadJokeTitle">Dad Joke</string>
+    <string name="exit">Exit</string>
 
 
 </resources>

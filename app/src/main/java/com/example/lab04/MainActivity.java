@@ -1,127 +1,79 @@
 package com.example.lab04;
 
-import androidx.appcompat.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.android.material.navigation.NavigationView;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-
-import javax.net.ssl.HttpsURLConnection;
-
-public class MainActivity extends AppCompatActivity {
-    MyListAdapter myAdapter;
-    private Bundle elements = new Bundle();
-
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        StarWars starWars = new StarWars();
-        starWars.execute("https://swapi.dev/api/people/?format=json");
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        DrawerLayout dlayout = findViewById(R.id.drawerLayout);
+
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,dlayout, toolbar, R.string.open, R.string.close);
+        dlayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        setSupportActionBar(toolbar);
 
     }
-        private class StarWars extends AsyncTask< String, Integer, String > {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
 
-            ListView myList = (ListView) findViewById(R.id.listView);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.example_menu, menu);
 
-            @Override
-            protected String doInBackground(String... args) {
-                    try {
-
-                        URL url = new URL (args[0]);
-                        HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-                        InputStream response = urlConnection.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(response, "UTF-8"), 8);
-                        StringBuilder sb =new StringBuilder();
-
-                        String line = null;
-                        while ((line=reader.readLine())!=null){
-                            sb.append(line + "\n");
-
-                        }
-                        String result = sb.toString();
-                        JSONObject starWarsList = new JSONObject(result);
-                        JSONArray characters = starWarsList.getJSONArray("results");
-
-                        for (int i=0 ; i < characters.length(); i++){
-                            JSONObject obj = characters.getJSONObject(i);
-                            String name = obj.getString("name");
-                            elements.putString("Name", name);
-                        }
-                        myList.setAdapter( myAdapter = new MyListAdapter() );
-                        myList.setOnItemLongClickListener((parent, view, pos, id) ->{
-
-                            myAdapter.notifyDataSetChanged();
-                            return false;
-                        });
-
-                    } catch (MalformedURLException e) {
-                        throw new RuntimeException(e);
-                    }
-                    catch (IOException e) {
-                        // this is an error when openConnection fails
-                        throw new RuntimeException(e);
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-
-            return "";
-            }
-        }
-    private class MyListAdapter extends BaseAdapter {
-
-        public int getCount() {
-            return elements.size();
-        }
-        public String getItem(int position) {
-            return elements.get(position+ "").toString();
-        }
-        public long getItemId(int position) {
-            return (long) position;
-        }
-        public View getView(int position, View old, ViewGroup parent) {
-            View newView = old;
-            LayoutInflater inflater = getLayoutInflater();
-            if (newView == null) {
-                newView = inflater.inflate(R.layout.activity_main, parent, false);
-            }
-            TextView lView = newView.findViewById(R.id.listView);
-            lView.setText(getItem(position));
-
-            return newView;
-        }
+        return super.onCreateOptionsMenu(menu);
     }
+
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        String message = null;
+        int itemId = item.getItemId();
+        if (itemId == R.id.choice1) {
+            message = "You clicked on item 1";
+        } else if (itemId == R.id.choice2) {
+            message = "You clicked on item 2";
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == R.id.home)
+            setContentView(R.layout.activity_main);
+        else if (itemId == R.id.joke) {
+            Intent dadJokePage = new Intent(this, DadJoke.class);
+            startActivity(dadJokePage);
+        }
+        else if (itemId == R.id.exit){
+            finishAffinity();
+        }
+
+        return false;
+    }
+
+
+
+
 }
